@@ -70,6 +70,19 @@ rad = 6 * np.sqrt(rng.uniform(0, 1, 6000))
 pts = np.c_[rng.choice([-1, 1], 6000) * rng.uniform(14, 60, 6000), rad * np.cos(ang), BORE_Z + rad * np.sin(ang)]
 print("pin vise (12 mm) clash points for |x| >= 14:", int(m.contains(pts).sum()))
 
+# Line of sight: a straight-down stream anywhere in the mouth must not land
+# below the funnel bottom, and never in the culvert.
+KEEL_TOP, MOUTH_R = param("keel_top"), param("mouth_d") / 2
+g = np.arange(-MOUTH_R, MOUTH_R, 0.2) + 0.13  # offset so no ray grazes a face exactly
+gx, gy = np.meshgrid(g, g)
+keep = np.hypot(gx, gy) < MOUTH_R - 0.2
+orig = np.c_[gx[keep], gy[keep], np.full(keep.sum(), 100.0)]
+loc, idx, _ = m.ray.intersects_location(orig, np.tile([0, 0, -1.0], (len(orig), 1)), multiple_hits=False)
+low = loc[:, 2] < KEEL_TOP - 0.05
+in_culvert = low & (np.abs(loc[:, 0]) < CULVERT_X)
+print("straight-down hits below the funnel bottom: %.1f mm2 (in the culvert: %.1f mm2)"
+      % (low.sum() * 0.04, in_culvert.sum() * 0.04))
+
 # Pool and capacity from the cavity solid.
 with tempfile.TemporaryDirectory() as tmp:
     out = os.path.join(tmp, "cavity.stl")

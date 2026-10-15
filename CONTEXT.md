@@ -63,7 +63,7 @@ The design came from a multi-agent study: four concepts, scored by two independe
 - Front-to-back tilt: about 0.
 - Bore diameter mismatch: 0.34 points per 0.01 mm.
 - Exit wetting mismatch: about 0.3 points per 0.1 mm of head.
-- Fast shots store 6–20 ml in the funnel, which drains 5–15 s after the pump stops.
+- Fast shots store 6–20 ml in the funnel, which drains about 5–15 s after the pump stops.
 
 ## Decisions and rejected options
 
@@ -72,7 +72,10 @@ The design came from a multi-agent study: four concepts, scored by two independe
 - **"Crown" (notched crest with a hood):** scored lower. Its metering heads are too low and it needs two parts.
 - **"Comb"** (B-A-A-B notches, exact cup-axis tilt cancellation): **runner-up**. Kept as a fallback (see next steps).
 - **Twin rocker / tipping bucket:** rejected. Moving parts, about 37 g, and it needs micron-level symmetry.
-- **The culvert roof is kept on purpose.** It is the only feature that stops a stream from plunging next to a bore. This is the one deviation from "fully open top": a 4 × ~5 mm channel, see-through end to end and cleaned with a pipe cleaner.
+- **The culvert roof is kept on purpose.** It is the only feature that stops a stream from plunging next to a bore. This is the one deviation from "fully open top".
+  - It is a 4 × ~5 mm channel, 11.4 mm roofed. It is not see-through along its length, because both slots are hooded; only the bores are see-through, along X.
+  - It is flush-cleaned with hot water, plus blowing through or a thin interdental brush via a slot.
+  - `hood_lift = 1` widens the brush path. It shows 16 mm² of slot corners from above instead of 8; the culvert stays hidden.
 - **Reaming:** the earlier single-pass coaxial plan was replaced by per-side reaming, because a single pass leaves a burr on only one inlet, where it can't be reached.
 
 ## Verification done
@@ -95,14 +98,16 @@ The design came from a multi-agent study: four concepts, scored by two independe
 apt-get install -y openscad xvfb          # OpenSCAD 2021.01
 pip install trimesh networkx shapely mapbox-earcut manifold3d rtree
 openscad -o stl/splitter.stl src/shot_splitter.scad
-python3 tools/check_mesh.py
+python3 tools/check_mesh.py               # or: python3 tools/check_mesh.py mouth_d=68 hood_lift=1
 xvfb-run -a openscad -D 'part="preview"' --camera=0,-260,170,0,0,5 --viewall --autocenter \
   --colorscheme=Tomorrow --imgsize=1400,1000 -o images/assembly.png src/shot_splitter.scad
 ```
 
 ## Open items and next steps
 
-1. Print in PETG, ream per side, then run the README water test. Pass: 49–51% everywhere; 180° swap bias ≤ 0.7 points; a 1 mm shim ≤ 0.5 points.
+1. Print in PETG, ream per side to a 4.5 mm depth flag, then run the README water test.
+   - Pass: 49–51% everywhere; 180° swap bias ≤ 0.7 points.
+   - 1 mm shim: ≤ 0.5 points at ≥ 1 ml/s, 1–2 points at 0.5 ml/s.
 2. If the low-flow test (0.3–0.5 ml/s poured off to one side) shows more than 1–2% bias, try `bore_d = 1.4` (keep `pilot_d` smaller).
 3. If cup-height tilt dominates: **v4 fallback**.
    - Turn the bore axis to Y so both bores sit at x = 0, with open chutes turning to each cup. Cup-axis tilt then cancels exactly, and front-to-back tilt becomes first order.

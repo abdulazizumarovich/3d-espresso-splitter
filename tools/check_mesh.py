@@ -2,11 +2,13 @@
 
 Usage (from the repo root; needs openscad and
 `pip install trimesh networkx shapely mapbox-earcut manifold3d rtree`):
-    python3 tools/check_mesh.py
+    python3 tools/check_mesh.py                  # checks stl/splitter.stl
+    python3 tools/check_mesh.py mouth_d=68 ...   # renders and checks a customised build
 """
 import os
 import re
 import subprocess
+import sys
 import tempfile
 
 import numpy as np
@@ -17,15 +19,30 @@ SCAD = os.path.join(ROOT, "src", "shot_splitter.scad")
 STL = os.path.join(ROOT, "stl", "splitter.stl")
 
 
+OVERRIDES = dict(arg.split("=", 1) for arg in sys.argv[1:])
+DEFINES = [f for k, v in OVERRIDES.items() for f in ("-D", f"{k}={v}")]
+TMP = tempfile.mkdtemp()
+
+
 def param(name):
+    if name in OVERRIDES:
+        return float(OVERRIDES[name])
     m = re.search(rf"^{name}\s*=\s*([0-9.]+)", open(SCAD).read(), re.M)
     return float(m.group(1))
+
+
+def render(part):
+    out = os.path.join(TMP, part + ".stl")
+    subprocess.run(["openscad", *DEFINES, "-D", f'part="{part}"', "-o", out, SCAD], check=True, capture_output=True)
+    return trimesh.load(out)
 
 
 FLOOR_Z, BORE_D, KEEL_X, CULVERT_X = param("floor_z"), param("bore_d"), param("keel_x"), param("culvert_x")
 BORE_Z = FLOOR_Z + BORE_D / 2
 
-m = trimesh.load(STL)
+if OVERRIDES:
+    print("rendering with", " ".join(sys.argv[1:]))
+m = render("splitter") if OVERRIDES else trimesh.load(STL)
 print("watertight", m.is_watertight, "| bodies", len(m.split(only_watertight=False)))
 print("bbox mm", m.bounds.round(2).tolist())
 print("volume %.2f cm3 | PETG mass %.1f g" % (m.volume / 1000, m.volume / 1000 * 1.27))
@@ -84,10 +101,7 @@ print("straight-down hits below the funnel bottom: %.1f mm2 (in the culvert: %.1
       % (low.sum() * 0.04, in_culvert.sum() * 0.04))
 
 # Pool and capacity from the cavity solid.
-with tempfile.TemporaryDirectory() as tmp:
-    out = os.path.join(tmp, "cavity.stl")
-    subprocess.run(["openscad", "-D", 'part="cavity"', "-o", out, SCAD], check=True, capture_output=True)
-    cav = trimesh.load(out)
+cav = render("cavity")
 print("capacity from bore to rim %.1f ml" % (cav.volume / 1000))
 for h in (2, 4, 6, 9, 12, 15):
     z = BORE_Z + h

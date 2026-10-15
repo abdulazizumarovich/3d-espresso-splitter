@@ -9,7 +9,8 @@
 // - A lid over the bores sheds a direct stream. The pool reaches the bores
 //   only through two inlet slots at the ends of a short culvert. Both slots
 //   lie on the mirror plane between the cups and face sideways under a
-//   45 degree hood, so no straight-down stream can land in them.
+//   45 degree hood, so no straight-down stream can reach the culvert (only
+//   small chamfer corners at the slot entrances can be seen from above).
 // - The culvert floor falls toward the bores and its ceiling rises toward
 //   the slots, so it drains and vents.
 // - The bores are printed undersize and each is reamed from its own outer
@@ -44,6 +45,7 @@ floor_z    = 8;    // culvert floor at the bores (lowest point)
 floor_fall = 0.8;  // the floor rises this much from the bores to the slots
 floor_t    = 2.2;
 vent       = 1.0;  // the ceiling rises this much from the bores to the slots
+hood_lift  = 0;    // raise the hoods (e.g. 1) for an easier brush path; more of the slot corners then show from above
 bore_d     = 1.6;  // final bore, reamed after printing
 pilot_d    = 1.4;  // printed pilot
 
@@ -163,8 +165,8 @@ module lid()
             slab(-keel_x, keel_x, -roof_y, roof_y, keel_top, keel_top + keel_x + 1);
             for (s = [-1, 1])
                 hull() {
-                    slab(-keel_x, keel_x, s * roof_y - e, s * roof_y + e, keel_top, keel_top + keel_x + 1);
-                    slab(-keel_x, keel_x, s * apron_y - e, s * apron_y + e, keel_top + apron_y - roof_y, keel_top + keel_x + 1);
+                    slab(-keel_x, keel_x, s * roof_y - e, s * roof_y + e, keel_top + hood_lift, keel_top + keel_x + 1);
+                    slab(-keel_x, keel_x, s * apron_y - e, s * apron_y + e, keel_top + hood_lift + apron_y - roof_y, keel_top + keel_x + 1);
                 }
         }
     }
@@ -212,8 +214,8 @@ module ring()
         // V-notches on the line where the cups touch
         for (a = [90, 270])
             rotate(a) translate([ring_r, 0, ring_h]) rotate([45, 0, 0]) cube([ring_w + 1, 1.2, 1.2], center = true);
-        // engraved arrows over the bore axis (flat, so a pin vise clears
-        // them); line them up with the cup centres
+        // engraved arrows on the bore axis (flat, so a pin vise clears
+        // them); point them along the line through both cup centres
         for (a = [0, 180])
             rotate(a) translate([ring_r, 0, ring_h - mark_d])
                 linear_extrude(mark_d + 1) polygon([[-1, -1], [-1, 1], [1, 0]]);

@@ -87,9 +87,8 @@ The design came from a multi-agent study: four concepts, scored by two independe
 ## Repo state
 
 - GitHub: `abdulazizumarovich/3d-espresso-splitter`.
-- `main` holds only v1 (`f66277e`).
-- Branch **`claude/ball-free-splitter-v3`** holds v2, these notes and v3.
-- The owner hasn't yet decided whether to merge into `main` or open a pull request.
+- `main` holds the full history: v1, v2, these notes and v3. The owner asked for v3 to be merged into `main`.
+- Branch `claude/ball-free-splitter-v3` is the same as `main` and can be deleted.
 - The session's `GH_TOKEN` is invalid (the `gh` CLI fails). Git push works through the session's repo attachment.
 
 ## How to rebuild and check
@@ -113,7 +112,6 @@ xvfb-run -a openscad -D 'part="preview"' --camera=0,-260,170,0,0,5 --viewall --a
    - Turn the bore axis to Y so both bores sit at x = 0, with open chutes turning to each cup. Cup-axis tilt then cancels exactly, and front-to-back tilt becomes first order.
    - Or use the Comb's B-A-A-B layout.
 4. Optional: a lighter `mouth_d = 68` (18.9 g, 46.5 ml, 43.3 mm tall).
-5. Merge the branch into `main` once the owner approves.
 
 ## Owner preferences
 
